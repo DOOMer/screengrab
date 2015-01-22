@@ -151,8 +151,6 @@ MainWindow::MainWindow(QWidget* parent) :
     QIcon icon(":/res/img/logo.png");
     setWindowIcon(icon);
 
-    resize(_core->conf->getRestoredWndSize().width(), _core->conf->getRestoredWndSize().height());
-
     move(QApplication::desktop()->availableGeometry(
                 QApplication::desktop()->screenNumber() ).width()/2 - width()/2,
          QApplication::desktop()->availableGeometry(
@@ -229,6 +227,7 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
 
 void MainWindow::show()
 {
+    resize(_core->conf->getRestoredWndSize().width(), _core->conf->getRestoredWndSize().height());
     if (_trayIcon != NULL)
     {
         _trayIcon->setVisible(true);
