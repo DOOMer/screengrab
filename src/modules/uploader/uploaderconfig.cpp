@@ -31,9 +31,11 @@ const bool DEF_AUTO_COPY_RESULT_LIMK = false;
 // imageshack.us defaults
 const QString DEF_IMGSHK_USER = "";
 const QString DEF_IMGSHK_PASS = "";
-const QString DEF_DEFAULT_HOST = "ImgUr";
+const QString DEF_DEFAULT_HOST = "Imgur";
 
-const QString  groupName = "imageshack.us";
+// backported from v2.0 branch
+#define DEF_MCSH_URL "https://mediacru.sh/api/upload/file"
+
 QStringList UploaderConfig::_labelsList = QStringList() << "MediaCrush" << "Imgur" << "ImageShack";
 
 UploaderConfig::UploaderConfig()
@@ -115,14 +117,19 @@ void UploaderConfig::defaultSettings()
 	_settings->setValue(KEY_DEFAULT_HOST, DEF_DEFAULT_HOST);
 	_settings->endGroup();
 
+    // mediacru.sh settings
+    _settings->beginGroup(_groupsList[0]);
+     _settings->setValue(KEY_MCSH_URL, DEF_MCSH_URL);
+    _settings->endGroup();
+
 	// imageshack.us settings
-	_settings->beginGroup(_groupsList[1]);
+    _settings->beginGroup(_groupsList[2]);
 	_settings->setValue(KEY_IMGSHK_USER, DEF_IMGSHK_USER);
 	_settings->setValue(KEY_IMGSHK_PASS, DEF_IMGSHK_PASS);
 	_settings->endGroup();
 	
 	// imgur.com settings
-	_settings->beginGroup(_groupsList[0]);
+    _settings->beginGroup(_groupsList[1]);
 	
 	_settings->endGroup();
 }

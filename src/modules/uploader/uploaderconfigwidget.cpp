@@ -51,6 +51,7 @@ UploaderConfigWidget::UploaderConfigWidget(QWidget *parent) :
 	_ui->stackedHosts->addWidget(_imgshack);
 	
 	connect(_ui->cbxHosts, SIGNAL(currentIndexChanged(int)), _ui->stackedHosts, SLOT(setCurrentIndex(int)));
+    _ui->stackedHosts->setCurrentIndex(_ui->cbxDefaultHost->currentIndex());
 }
 
 UploaderConfigWidget::~UploaderConfigWidget()
@@ -85,6 +86,7 @@ void UploaderConfigWidget::loadSettings()
 		_ui->cbxDefaultHost->setCurrentIndex(index);
 	}
 	
+    _ui->cbxHosts->setCurrentIndex(_ui->cbxDefaultHost->currentIndex());
 	_ui->checkAutoCopyMainLink->setChecked(loadValues["autoCopyDirectLink"].toBool());
 }
 
@@ -101,6 +103,7 @@ void UploaderConfigWidget::saveSettings()
 	
 	QMetaObject::invokeMethod(_imgur, "saveSettings");
 	QMetaObject::invokeMethod(_imgshack, "saveSettings");
+    QMetaObject::invokeMethod(_crush, "saveSettings");
 
 }
 

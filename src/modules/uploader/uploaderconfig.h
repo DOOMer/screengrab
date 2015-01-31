@@ -34,6 +34,10 @@ const QString KEY_DEFAULT_HOST = "defaultHost";
 const QString KEY_IMGSHK_USER = "username";
 const QString KEY_IMGSHK_PASS = "password";
 
+// backported from v2.0
+// Uploader config file mediacru.sh keys
+#define KEY_MCSH_URL "uploadUrl"
+
 class UploaderConfig
 {
 
