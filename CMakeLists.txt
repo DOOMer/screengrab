@@ -62,29 +62,29 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wnon-virtual-dtor -Woverloaded-virtual 
 
 # ------ install prefix --------------------------
 
-set(CMAKE_INSTALL_PREFIX "/usr")
+message(STATUS "Install prefix: " ${CMAKE_INSTALL_PREFIX})
 
 add_definitions( -DPREFIX="${CMAKE_INSTALL_PREFIX}")
 
 message(STATUS "Install prefix: " ${CMAKE_INSTALL_PREFIX})
 
 if(UNIX AND NOT APPLE)
-	# Check Debian or Ubuntu?
-	if (EXISTS "/etc/debian_version")
-		set (LIBDIR "lib/${CMAKE_LIBRARY_ARCHITECTURE}")	
-	# Other distro
-	else (EXISTS "/etc/debian_version")
-		string (COMPARE EQUAL "${CMAKE_SIZEOF_VOID_P}" "8" IS64BITS)
-		if (IS64BITS)
-			SET (LIBDIR "lib64")
-		else (IS64BITS )
-			SET (LIBDIR "lib")
-		endif (IS64BITS )	
-	endif (EXISTS "/etc/debian_version")
+        # Check Debian or Ubuntu?
+        if (EXISTS "/etc/debian_version")
+                set (LIBDIR "lib/${CMAKE_LIBRARY_ARCHITECTURE}")
+        # Other distro
+        else (EXISTS "/etc/debian_version")
+                string (COMPARE EQUAL "${CMAKE_SIZEOF_VOID_P}" "8" IS64BITS)
+                if (IS64BITS)
+                        SET (LIBDIR "lib64")
+                else (IS64BITS )
+                        SET (LIBDIR "lib")
+                endif (IS64BITS )
+        endif (EXISTS "/etc/debian_version")
 
-	set(SG_LIBDIR "${LIBDIR}/screengrab")
-	set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${SG_LIBDIR}")
-	message(STATUS "Library path: "${CMAKE_INSTALL_RPATH})
+        set(SG_LIBDIR "${CMAKE_INSTALL_LIBDIR}/screengrab")
+        set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${SG_LIBDIR}")
+        message(STATUS "Library path: "${CMAKE_INSTALL_RPATH})
 endif(UNIX AND NOT APPLE)
 
 # ------ options ---------------------------------
