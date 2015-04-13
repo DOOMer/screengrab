@@ -50,7 +50,8 @@ const bool DEF_AUTO_SAVE = false;
 const bool DEF_AUTO_SAVE_FIRST = false;
 const QString DEF_DATETIME_TPL = "yyyy-MM-dd-hh-mm-ss";
 const bool DEF_SHOW_TRAY = true;
-const bool DEF_ENABLE_EXT_VIEWER = 1;
+const bool DEF_ENABLE_EXT_VIEWER = true;
+const bool DEF_INCLUDE_CURSOR = false;
 
 // class worker with conf data
 class Config
@@ -218,6 +219,9 @@ public:
 
     bool getEnableExtView();
     void setEnableExtView(bool val);
+
+    bool getIncludeCursor();
+    void setIncludeCursor(bool val);
 
     static QString getSysLang();
 

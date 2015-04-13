@@ -31,8 +31,18 @@
 
 #include <QDebug>
 
-#include "core/core.h"
 #include <KF5/KWindowSystem/KWindowSystem>
+#include <xcb/xfixes.h>
+
+#ifdef X11_XCB_FOUND
+#include "x11utils.h"
+#endif
+
+#include "core/core.h"
+
+#ifdef SG_DBUS_NOTIFY
+#include "dbusnotifier.h"
+#endif
 
 #ifdef SG_EXT_UPLOADS
 #include "modules/uploader/moduleuploader.h"
@@ -183,6 +193,7 @@ void Core::screenShot(bool first)
         const QDesktopWidget *desktop = QApplication::desktop();
         const int screenNum = desktop->screenNumber(QCursor::pos());
         *_pixelMap = screens[screenNum]->grabWindow(desktop->winId());
+        grabCursor(0, 0);
 
         checkAutoSave(first);
         _wnd->updatePixmap(_pixelMap);
@@ -212,6 +223,8 @@ void Core::screenShot(bool first)
         break;
     }
 
+
+
     _wnd->updatePixmap(_pixelMap);
     _wnd->restoreFromShot();
 }
@@ -234,7 +247,7 @@ void Core::checkAutoSave(bool first)
         if (!first)
         {
             StateNotifyMessage message(tr("New screen"), tr("New screen is getted!"));
-            _wnd->showTrayMessage(message.header, message.message);
+            sendNotify(message);
         }
     }
 }
@@ -270,7 +283,26 @@ void Core::getActiveWindow()
                                      geometry.x(),
                                      geometry.y(),
                                      geometry.width(),
-                                     geometry.height());
+                                                geometry.height());
+    grabCursor(geometry.x(), geometry.y());
+}
+
+void Core::grabCursor(int offsetX, int offsetY)
+{
+#ifdef XCB_XFOXES_FOUND
+    if (_conf->getIncludeCursor())
+        X11Utils::compositePointer(offsetX, offsetY, _pixelMap);
+#else
+    Q_UNUSED(offsetx);
+    Q_UNUSED(offsety);
+#endif
+
+
+}
+
+void Core::sendSystemNotify(const StateNotifyMessage &notify)
+{
+    qDebug() << "Send system notification";
 }
 
 QString Core::getSaveFilePath(QString format)
@@ -377,7 +409,7 @@ bool Core::writeScreen(QString& fileName, QString& format, bool tmpScreen)
 
             message.message = message.message + copyFileNameToCliipboard(fileName);
             _conf->updateLastSaveDate();
-            _wnd->showTrayMessage(message.header, message.message);
+            sendNotify(message);
         }
         else
             qWarning() << "Error saving file " << fileName;
@@ -410,11 +442,21 @@ QString Core::copyFileNameToCliipboard(QString file)
     return retString;
 }
 
+void Core::sendNotify(const StateNotifyMessage &message)
+{
+#ifdef SG_DBUS_NOTIFY
+    DBusNotifier *notifier = new DBusNotifier();
+    notifier->displayNotify(message);
+#else
+    _wnd->showTrayMessage(message.header, message.message);
+#endif
+}
+
 void Core::copyScreen()
 {
     QApplication::clipboard()->setPixmap(*_pixelMap, QClipboard::Clipboard);
     StateNotifyMessage message(tr("Copied"), tr("Screenshot is copied to clipboard"));
-    _wnd->showTrayMessage(message.header, message.message);
+    sendNotify(message);
 }
 
 void Core::openInExtViewer()
@@ -519,7 +561,7 @@ QPixmap* Core::getPixmap()
     return _pixelMap;
 }
 
-QByteArray Core::getScreen()
+QByteArray Core::getScreenData()
 {
     QByteArray bytes;
     QBuffer buffer(&bytes);

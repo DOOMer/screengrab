@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 - 2013 by Artem 'DOOMer' Galichkin                        *
+ *   Copyright (C) 2010 - 2013 by Artem 'DOOMer' Galichkin                        *
  *   doomer3d@gmail.com                                                    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -18,42 +18,35 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef UPLOADERCONFIG_H
-#define UPLOADERCONFIG_H
+#ifndef X11UTILS_H
+#define X11UTILS_H
 
-#include <QSettings>
-#include <QStringList>
-#include <QVariant>
-#include <QMap>
+#include <QPixmap>
+#include <QScopedPointer>
+#include <QX11Info>
 
-//  Uploader config file common keys
-#define KEY_AUTO_COPY_RESULT_LIMK   "autoCopyDirectLink"
-#define KEY_DEFAULT_HOST            "defaultHost"
+#include <X11/Xlib-xcb.h>
+#include <fixx11h.h>
+#include <xcb/xcb.h>
 
-// Uploader config file mediacru.sh keys
-#define KEY_MCSH_URL                "uploadUrl"
+namespace X11Utils {
+    void compositePointer(int offsetX, int offsetY, QPixmap *snapshot);
+}
 
-class UploaderConfig
-{
 
-public:
-    UploaderConfig();
-    ~UploaderConfig();
+namespace Xcb {
+    template <typename T>
+    class ScopedCPointer : public QScopedPointer<T, QScopedPointerPodDeleter>
+    {
+    public:
+        ScopedCPointer(T *p = 0) : QScopedPointer<T, QScopedPointerPodDeleter>(p) {}
+    };
 
-    static QStringList labelsList();
+    inline xcb_connection_t *connection()
+    {
+        return XGetXCBConnection(QX11Info::display());
+    }
+} // namespace Xcb
 
-    QVariantMap loadSettings(const QByteArray& group, QVariantMap& mapValues);
-    QVariant loadSingleParam(const QByteArray& group, const QByteArray& param);
-    void saveSettings(const QByteArray& group, QVariantMap& mapValues);
-    void defaultSettings();
-    bool checkExistsConfigFile() const;
-    bool autoCopyResultLink();
+#endif // X11UTILS_H
 
-private:
-    QSettings *_settings;
-
-    QStringList _groupsList;
-    static QStringList _labelsList;
-};
-
-#endif // UPLOADERCONFIG_H

@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 - 2013 by Artem 'DOOMer' Galichkin                        *
+ *   Copyright (C) 2010 - 2013 by Artem 'DOOMer' Galichkin                        *
  *   doomer3d@gmail.com                                                    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -18,42 +18,28 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef UPLOADERCONFIG_H
-#define UPLOADERCONFIG_H
+#include "x11utils.h"
 
-#include <QSettings>
-#include <QStringList>
-#include <QVariant>
-#include <QMap>
+#include <xcb/xfixes.h>
 
-//  Uploader config file common keys
-#define KEY_AUTO_COPY_RESULT_LIMK   "autoCopyDirectLink"
-#define KEY_DEFAULT_HOST            "defaultHost"
+#include <QDebug>
+#include <QPainter>
 
-// Uploader config file mediacru.sh keys
-#define KEY_MCSH_URL                "uploadUrl"
-
-class UploaderConfig
+void X11Utils::compositePointer(int offsetX, int offsetY, QPixmap *snapshot)
 {
+    Xcb::ScopedCPointer<xcb_xfixes_get_cursor_image_reply_t> cursor(
+                xcb_xfixes_get_cursor_image_reply(Xcb::connection(),
+                                                  xcb_xfixes_get_cursor_image_unchecked(Xcb::connection()),
+                                                  NULL));
 
-public:
-    UploaderConfig();
-    ~UploaderConfig();
+    if (cursor.isNull()) {
+        return;
+    }
 
-    static QStringList labelsList();
+    QImage qcursorimg((uchar *) xcb_xfixes_get_cursor_image_cursor_image(cursor.data()),
+                          cursor->width, cursor->height,
+                          QImage::Format_ARGB32_Premultiplied);
 
-    QVariantMap loadSettings(const QByteArray& group, QVariantMap& mapValues);
-    QVariant loadSingleParam(const QByteArray& group, const QByteArray& param);
-    void saveSettings(const QByteArray& group, QVariantMap& mapValues);
-    void defaultSettings();
-    bool checkExistsConfigFile() const;
-    bool autoCopyResultLink();
-
-private:
-    QSettings *_settings;
-
-    QStringList _groupsList;
-    static QStringList _labelsList;
-};
-
-#endif // UPLOADERCONFIG_H
+    QPainter painter(snapshot);
+    painter.drawImage(QPointF(cursor->x - cursor->xhot - offsetX, cursor->y - cursor ->yhot - offsetY), qcursorimg);
+}

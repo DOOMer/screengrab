@@ -26,7 +26,6 @@
 
 #include "config.h"
 #include "regionselect.h"
-
 #include "modulemanager.h"
 
 #include "ui/mainwindow.h"
@@ -84,7 +83,7 @@ public:
     static QString getVersionPrintable();
 
     QPixmap* getPixmap();
-    QByteArray getScreen();
+    QByteArray getScreenData();
 
     void updatePixmap();
     QString getTempFilename(const QString& format);
@@ -115,9 +114,12 @@ private:
     void checkAutoSave(bool first = false);
 
     void getActiveWindow();
-
+    void grabCursor(int offsetX, int offsetY);
+    void sendSystemNotify(const StateNotifyMessage& notify);
     bool checkExsistFile(QString path);
     QString copyFileNameToCliipboard(QString file);
+    void sendNotify(const StateNotifyMessage& message);
+
     QPixmap *_pixelMap; // pixel map
     RegionSelect *_selector; // region grabber widget
     QRect _lastSelectedArea;

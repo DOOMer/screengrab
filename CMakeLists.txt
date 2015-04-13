@@ -20,6 +20,24 @@ set(CMAKE_AUTOUIC ON)
 include(GNUInstallDirs)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
+find_package(X11)
+if (X11_FOUND)
+    set(HAVE_X11 1)
+endif(X11_FOUND)
+
+# set up xcb and x11_xcb
+
+find_package(
+    XCB MODULE COMPONENTS
+        XCB
+        SHAPE
+        XFIXES
+)
+
+find_package(
+    X11_XCB MODULE
+)
+
 # add version define
 set(SCREENGRAB_VERSION "1.95")
 set(SCREENGRAB_VERSION_DEV "2.0-beta1")
@@ -65,6 +83,7 @@ message(STATUS "Library path: ${CMAKE_INSTALL_RPATH}")
 option(SG_GLOBALSHORTCUTS "Enable global shortcuts" OFF)
 option(SG_EXT_UPLOADS "Enable upload screenshots to MediaCrush and imgur" ON)
 option(SG_EXT_EDIT "Enable ability to edit screenshots in external editor" ON)
+option(SG_DBUS_NOTIFY "Enable D-Bus notifications" ON)
 option(UPDATE_TRANSLATIONS "Update source translation translations/*.ts files" OFF)
 
 # Although the names, LXQtTranslateTs and LXQtTranslateDesktop, they don't
@@ -93,9 +112,15 @@ if(SG_EXT_EDIT)
     include(${QTXDG_USE_FILE})
 endif()
 
+if(SG_DBUS_NOTIFY)
+    find_package(Qt5DBus 5.2 REQUIRED)
+    add_definitions( -DSG_DBUS_NOTIFY="1")
+endif()
+
 message(STATUS "Global shortcuts support: " ${SG_GLOBALSHORTCUTS})
 message(STATUS "Upload to MediaCrush and imgur support: " ${SG_EXT_UPLOADS})
 message(STATUS "Editing screenshots in external editor support: " ${SG_EXT_EDIT})
+message(STATUS "Enable D-Bus notifications: " ${SG_DBUS_NOTIFY})
 message(STATUS "Use system Qxt Library: " ${SG_USE_SYSTEM_QXT})
 message(STATUS "Update source translation translations/*.ts files: " ${UPDATE_TRANSLATIONS})
 
@@ -103,6 +128,9 @@ message(STATUS "Update source translation translations/*.ts files: " ${UPDATE_TR
 # CMAKE_INSTALL_FULL_DOCDIR = CMAKE_INSTALL_PREFIX/CMAKE_INSTALL_DATADIR/doc/PROJECT_NAME
 message(STATUS "Documentation directory: " ${CMAKE_INSTALL_FULL_DOCDIR})
 add_definitions(-DSG_DOCDIR="${CMAKE_INSTALL_FULL_DOCDIR}")
+
+# app icon path
+add_definitions(-DSG_ICONPATH="${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/pixmaps/screengrab.png")
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src")
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/src/common/qkeysequencewidget")
@@ -128,8 +156,16 @@ set(SCREENGRAB_SRC
     src/core/modulemanager.cpp
     src/core/ui/configwidget.cpp
     src/core/ui/about.cpp
-    src/core/ui/mainwindow.cpp
+    src/core/ui/mainwindow.cpp    
 )
+
+if(SG_DBUS_NOTIFY)
+    set(SCREENGRAB_SRC ${SCREENGRAB_SRC} src/core/dbusnotifier.cpp)
+endif()
+
+if(X11_FOUND)
+    set(SCREENGRAB_SRC ${SCREENGRAB_SRC} src/core/x11utils.cpp)
+endif()
 
 set(SCREENGRAB_HDR
     src/core/singleapp.h
@@ -195,8 +231,31 @@ if(SG_EXT_EDIT)
     target_link_libraries(screengrab extedit)
 endif()
 
-target_link_libraries(screengrab qkeysequencewidget Qt5::Widgets KF5::WindowSystem)
+if(SG_DBUS_NOTIFY)
+    target_link_libraries(screengrab Qt5::DBus)
+endif()
 
+if (X11_XCB_FOUND)
+    add_definitions( -DX11_XCB_FOUND="1")
+    target_link_libraries(screengrab ${X11_XCB_LIBRARIES})
+endif()
+
+if (XCB_XCB_FOUND)
+    add_definitions( -DXCB_XCB_FOUND="1")
+    target_link_libraries(screengrab ${XCB_XCB_LIBRARY})
+endif()
+
+if (XCB_SHAPE_FOUND)
+    add_definitions( -DXCB_SHAPE_FOUND="1")
+    target_link_libraries(screengrab ${XCB_SHAPE_LIBRARY})
+endif()
+
+if (XCB_XFIXES_FOUND)
+    add_definitions( -DXCB_XFOXES_FOUND="1")
+    target_link_libraries(screengrab ${XCB_XFIXES_LIBRARY})
+endif()
+
+target_link_libraries(screengrab qkeysequencewidget Qt5::Widgets KF5::WindowSystem ${X11_LIBRARIES})
 
 # make src.tar.gz
 add_custom_target(dist @echo create source package)
@@ -226,4 +285,4 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/docs/html" DESTINATION "${CMAKE_I
 # install desktop files
 install(FILES ${SCREENGRAB_DESKTOP_FILES} DESTINATION ${CMAKE_INSTALL_DATADIR}/applications)
 # install pixmap
-install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/img/screengrab.png" DESTINATION ${CMAKE_INSTALL_DATADIR}/pixmaps)
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/img/screengrab.png" DESTINATION "${CMAKE_INSTALL_DATADIR}/icons/hicolor/32x32/apps")

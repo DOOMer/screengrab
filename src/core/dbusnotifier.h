@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 - 2013 by Artem 'DOOMer' Galichkin                        *
+ *   Copyright (C) 2009 - 2013 by Artem 'DOOMer' Galichkin                 *
  *   doomer3d@gmail.com                                                    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -18,42 +18,31 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef UPLOADERCONFIG_H
-#define UPLOADERCONFIG_H
+#ifndef DBUSNOTIFIER_H
+#define DBUSNOTIFIER_H
 
-#include <QSettings>
-#include <QStringList>
-#include <QVariant>
-#include <QMap>
+#include <QObject>
 
-//  Uploader config file common keys
-#define KEY_AUTO_COPY_RESULT_LIMK   "autoCopyDirectLink"
-#define KEY_DEFAULT_HOST            "defaultHost"
+#include "core.h"
 
-// Uploader config file mediacru.sh keys
-#define KEY_MCSH_URL                "uploadUrl"
+class QDBusInterface;
 
-class UploaderConfig
+class DBusNotifier : public QObject
 {
-
+    Q_OBJECT
 public:
-    UploaderConfig();
-    ~UploaderConfig();
+    explicit DBusNotifier(QObject *parent = 0);
+    ~DBusNotifier();
 
-    static QStringList labelsList();
-
-    QVariantMap loadSettings(const QByteArray& group, QVariantMap& mapValues);
-    QVariant loadSingleParam(const QByteArray& group, const QByteArray& param);
-    void saveSettings(const QByteArray& group, QVariantMap& mapValues);
-    void defaultSettings();
-    bool checkExistsConfigFile() const;
-    bool autoCopyResultLink();
+    void displayNotify(const StateNotifyMessage& message);
 
 private:
-    QSettings *_settings;
+    QList<QVariant> prepareNotification(const StateNotifyMessage& message);
 
-    QStringList _groupsList;
-    static QStringList _labelsList;
+    QDBusInterface *_notifier;
+    int _notifyDuration;
+    QString _appIconPath;
+    QString _previewPath;
 };
 
-#endif // UPLOADERCONFIG_H
+#endif // DBUSNOTIFIER_H
