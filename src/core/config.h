@@ -141,6 +141,9 @@ public:
     quint8 getDefDelay();
     void setDefDelay(quint8 sec);
 
+    int getScreenshotType();
+    void setScreenshotType(const int type);
+
     quint8 getDelay();
     void setDelay(quint8 sec);
 
