@@ -344,16 +344,6 @@ void Config::setCloseInTray(bool val)
     setValue(KEY_CLOSE_INTRAY, val);
 }
 
-int Config::getTypeScreen()
-{
-    return value(KEY_TYPE_SCREEN).toInt();
-}
-
-void Config::setTypeScreen(quint8 type)
-{
-    setValue(KEY_TYPE_SCREEN, type);
-}
-
 quint8 Config::getTimeTrayMess()
 {
     return value(KEY_TIME_NOTIFY).toInt();
