@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 - 2013 by Artem 'DOOMer' Galichkin                        *
+ *   Copyright (C) 2009 - 2013 by Artem 'DOOMer' Galichkin                 *
  *   doomer3d@gmail.com                                                    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -13,9 +13,7 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
 #include "uploaderconfig.h"
@@ -33,13 +31,13 @@
 // mediacru.sh settings
 #define DEF_MCSH_URL                "https://mediacru.sh/api/upload/file"
 
-QStringList UploaderConfig::_labelsList = QStringList() << "MediaCrush" << "Imgur";
+QStringList UploaderConfig::_labelsList = QStringList() << "Imgur" << "MediaCrush";
 
 UploaderConfig::UploaderConfig()
 {
     QString configFile = Config::getConfigDir() + QDir::separator() + "uploader.conf";
     _settings = new QSettings(configFile, QSettings::IniFormat);
-    _groupsList << "mediacru.sh" << "imgur.com";
+    _groupsList << "imgur.com" << "mediacru.sh";
 }
 
 UploaderConfig::~UploaderConfig()

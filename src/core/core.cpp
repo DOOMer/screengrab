@@ -13,9 +13,7 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
 #include <QMutex>
@@ -185,9 +183,9 @@ void Core::screenShot(bool first)
     if (_firstScreen)
         _conf->updateLastSaveDate();
 
-    switch(_conf->getTypeScreen())
+    switch(_conf->getScreenshotType())
     {
-    case 0:
+    case Core::FullScreen:
     {
         const QList<QScreen *> screens = qApp->screens();
         const QDesktopWidget *desktop = QApplication::desktop();
@@ -199,20 +197,20 @@ void Core::screenShot(bool first)
         _wnd->updatePixmap(_pixelMap);
         break;
     }
-    case 1:
+    case Core::Window:
     {
         getActiveWindow();
         checkAutoSave(first);
         _wnd->updatePixmap(_pixelMap);
         break;
     }
-    case 2:
+    case Core::Area:
     {
         _selector = new RegionSelect(_conf);
         connect(_selector, &RegionSelect::processDone, this, &Core::regionGrabbed);
         break;
     }
-    case 3:
+    case Core::PreviousSelection:
     {
         _selector = new RegionSelect(_conf, _lastSelectedArea);
         connect(_selector, &RegionSelect::processDone, this, &Core::regionGrabbed);
@@ -519,7 +517,7 @@ void Core::processCmdLineOpts(const QStringList& arguments)
     // Check commandline parameters and set screenshot type
     for (int i=0; i < _screenTypeOpts.count(); ++i)
         if (_cmdLine.isSet(_screenTypeOpts.at(i)))
-            _conf->setTypeScreen(i);
+            _conf->setScreenshotType(i);
 
 #ifdef SG_EXT_UPLOADS
     /// FIXMA - In module interface need add the mthod for geting module cmdLine options

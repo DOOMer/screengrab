@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 3.0.2 FATAL_ERROR)
 
 # set project's name
 project(screengrab)
@@ -109,7 +109,6 @@ endif()
 if(SG_EXT_EDIT)
     add_definitions( -DSG_EXT_EDIT="1")
     find_package(Qt5Xdg REQUIRED)
-    include(${QTXDG_USE_FILE})
 endif()
 
 if(SG_DBUS_NOTIFY)
