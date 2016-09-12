@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 - 2013 by Artem 'DOOMer' Galichkin                        *
+ *   Copyright (C) 2009 - 2013 by Artem 'DOOMer' Galichkin                 *
  *   doomer3d@gmail.com                                                    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -13,9 +13,7 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
 #ifndef CONFIG_H
@@ -146,6 +144,14 @@ public:
     quint8 getDelay();
     void setDelay(quint8 sec);
 
+    // configured default screenshot type
+    int getDefScreenshotType();
+    void setDefScreenshotType(const int type);
+
+    // current screenshot type
+    int getScreenshotType();
+    void setScreenshotType(const int type);
+
     quint8 getAutoCopyFilenameOnSaving();
     void setAutoCopyFilenameOnSaving(quint8 val);
 
@@ -160,10 +166,6 @@ public:
     // closing in tray
     bool getCloseInTray();
     void setCloseInTray(bool val);
-
-    // type of screen
-    int getTypeScreen();
-    void setTypeScreen(quint8 type);
 
     // tume of tray messages
     quint8 getTimeTrayMess();

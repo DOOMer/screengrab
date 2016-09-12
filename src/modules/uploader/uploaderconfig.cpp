@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 - 2013 by Artem 'DOOMer' Galichkin                        *
+ *   Copyright (C) 2009 - 2013 by Artem 'DOOMer' Galichkin                 *
  *   doomer3d@gmail.com                                                    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -13,9 +13,7 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
 #include "uploaderconfig.h"
@@ -30,16 +28,14 @@
 #define DEF_AUTO_COPY_RESULT_LIMK   false
 #define DEF_DEFAULT_HOST            "Imgur"
 
-// mediacru.sh settings
-#define DEF_MCSH_URL                "https://mediacru.sh/api/upload/file"
 
-QStringList UploaderConfig::_labelsList = QStringList() << "MediaCrush" << "Imgur";
+QStringList UploaderConfig::_labelsList = QStringList() << "Imgur";
 
 UploaderConfig::UploaderConfig()
 {
     QString configFile = Config::getConfigDir() + QDir::separator() + "uploader.conf";
     _settings = new QSettings(configFile, QSettings::IniFormat);
-    _groupsList << "mediacru.sh" << "imgur.com";
+    _groupsList << "imgur.com" << "mediacru.sh";
 }
 
 UploaderConfig::~UploaderConfig()
@@ -104,11 +100,6 @@ void UploaderConfig::defaultSettings()
     _settings->beginGroup("common");
     _settings->setValue(KEY_AUTO_COPY_RESULT_LIMK, DEF_AUTO_COPY_RESULT_LIMK);
     _settings->setValue(KEY_DEFAULT_HOST, DEF_DEFAULT_HOST);
-    _settings->endGroup();
-
-    // mediacru.sh settings
-    _settings->beginGroup(_groupsList[0]);
-    _settings->setValue(KEY_MCSH_URL, DEF_MCSH_URL);
     _settings->endGroup();
 
     // imgur.com settings

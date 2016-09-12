@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 - 2013 by Artem 'DOOMer' Galichkin                        *
+ *   Copyright (C) 2009 - 2013 by Artem 'DOOMer' Galichkin                 *
  *   doomer3d@gmail.com                                                    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -13,10 +13,8 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
- ***************************************************************************/
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+***************************************************************************/
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -401,7 +399,7 @@ void MainWindow::delayBoxChange(int delay)
 
 void MainWindow::typeScreenShotChange(int type)
 {
-    _conf->setTypeScreen(type);
+    _conf->setScreenshotType(type);
 }
 
 void MainWindow::checkIncludeCursor(bool include)
@@ -412,8 +410,8 @@ void MainWindow::checkIncludeCursor(bool include)
 // updating UI from configdata
 void MainWindow::updateUI()
 {
-    _ui->cbxTypeScr->setCurrentIndex(_conf->getTypeScreen());
     _ui->delayBox->setValue(_conf->getDelay());
+    _ui->cbxTypeScr->setCurrentIndex(_conf->getDefScreenshotType());
     _ui->checkIncludeCursor->setChecked(_conf->getIncludeCursor());
 
     updateShortcuts();
@@ -499,7 +497,6 @@ void MainWindow::saveScreen()
 
     formatsAvalible["png"] = tr("PNG Files");
     formatsAvalible["jpg"] = tr("JPEG Files");
-    formatsAvalible["bmp"] = tr("BMP Files");
 
     QString format = "png";
     _conf->getSaveFormat();
