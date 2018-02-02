@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 - 2013 by Artem 'DOOMer' Galichkin                        *
+ *   Copyright (C) 2009 - 2013 by Artem 'DOOMer' Galichkin                 *
  *   doomer3d@gmail.com                                                    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -13,9 +13,7 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
 #ifndef REGIONSELECT_H
@@ -31,6 +29,13 @@
 #include <QPixmap>
 #include <QSize>
 #include <QPoint>
+
+enum Side{
+    TOP,
+    RIGHT,
+    BOTTOM,
+    LEFT
+};
 
 // class RegionSelect : public QDialog
 class RegionSelect : public QWidget
@@ -61,7 +66,11 @@ private:
     QPoint _selStartPoint;
     QPoint _selEndPoint;
 
+    int _currentFit;
+    QVector<QRect> _fitRectangles;
+
     bool _processSelection;
+    bool _fittedSelection;
 
     QPixmap _desktopPixmapBkg;
     QPixmap _desktopPixmapClr;
@@ -69,8 +78,14 @@ private:
     void sharedInit();
     void drawBackGround();
     void drawRectSelection(QPainter &painter);
+    void selectFit();
+    void findFit();
+    void fitBorder(const QRect &boundRect, enum Side side, int &border);
 
     Config *_conf;
+
+    const int fitRectExpand = 20;
+    const int fitRectDepth = 50;
 
 };
 

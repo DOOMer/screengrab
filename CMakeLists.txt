@@ -1,11 +1,11 @@
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 3.0.2 FATAL_ERROR)
 
 # set project's name
 project(screengrab)
 
-find_package(Qt5Widgets 5.2.0 REQUIRED)
-find_package(Qt5X11Extras 5.2.0 REQUIRED)
-find_package(Qt5Network 5.2.0 REQUIRED)
+find_package(Qt5Widgets 5.7.1 REQUIRED)
+find_package(Qt5X11Extras 5.7.1 REQUIRED)
+find_package(Qt5Network 5.7.1 REQUIRED)
 find_package(KF5WindowSystem REQUIRED)
 
 # for translations
@@ -39,7 +39,7 @@ find_package(
 )
 
 # add version define
-set(SCREENGRAB_VERSION "1.95")
+set(SCREENGRAB_VERSION "1.97")
 set(SCREENGRAB_VERSION_DEV "2.0-beta1")
 # set(DEV_BUILD True)
 
@@ -64,7 +64,10 @@ elseif(NOT SCREENGRAB_VERSION_DEV)
     set(VERSION "${SCREENGRAB_VERSION}")
 endif(SCREENGRAB_VERSION_DEV)
 
-add_definitions(-DVERSION="${VERSION}")
+add_definitions(
+    -DVERSION="${VERSION}"
+    -DQT_NO_FOREACH
+)
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
@@ -81,7 +84,7 @@ message(STATUS "Library path: ${CMAKE_INSTALL_RPATH}")
 
 # options
 option(SG_GLOBALSHORTCUTS "Enable global shortcuts" OFF)
-option(SG_EXT_UPLOADS "Enable upload screenshots to MediaCrush and imgur" ON)
+option(SG_EXT_UPLOADS "Enable upload screenshots to Imgur" ON)
 option(SG_EXT_EDIT "Enable ability to edit screenshots in external editor" ON)
 option(SG_DBUS_NOTIFY "Enable D-Bus notifications" ON)
 option(UPDATE_TRANSLATIONS "Update source translation translations/*.ts files" OFF)
@@ -109,7 +112,6 @@ endif()
 if(SG_EXT_EDIT)
     add_definitions( -DSG_EXT_EDIT="1")
     find_package(Qt5Xdg REQUIRED)
-    include(${QTXDG_USE_FILE})
 endif()
 
 if(SG_DBUS_NOTIFY)
@@ -118,7 +120,7 @@ if(SG_DBUS_NOTIFY)
 endif()
 
 message(STATUS "Global shortcuts support: " ${SG_GLOBALSHORTCUTS})
-message(STATUS "Upload to MediaCrush and imgur support: " ${SG_EXT_UPLOADS})
+message(STATUS "Imgur upload support: " ${SG_EXT_UPLOADS})
 message(STATUS "Editing screenshots in external editor support: " ${SG_EXT_EDIT})
 message(STATUS "Enable D-Bus notifications: " ${SG_DBUS_NOTIFY})
 message(STATUS "Use system Qxt Library: " ${SG_USE_SYSTEM_QXT})
@@ -156,7 +158,7 @@ set(SCREENGRAB_SRC
     src/core/modulemanager.cpp
     src/core/ui/configwidget.cpp
     src/core/ui/about.cpp
-    src/core/ui/mainwindow.cpp    
+    src/core/ui/mainwindow.cpp
 )
 
 if(SG_DBUS_NOTIFY)

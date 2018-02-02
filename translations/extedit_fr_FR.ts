@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1">
+<TS version="2.1" language="fr_FR">
 <context>
     <name>AboutDialog</name>
     <message>
@@ -404,11 +404,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/ui/mainwindow.ui" line="140"/>
-        <source>Type: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../src/core/ui/mainwindow.ui" line="101"/>
         <source>Type of screenshot</source>
         <translation type="unfinished"></translation>
@@ -434,8 +429,8 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/ui/mainwindow.ui" line="181"/>
-        <source>Delay</source>
+        <location filename="../src/core/ui/mainwindow.ui" line="140"/>
+        <source>Type: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -446,6 +441,11 @@
     <message>
         <location filename="../src/core/ui/mainwindow.ui" line="165"/>
         <source> sec</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/core/ui/mainwindow.ui" line="181"/>
+        <source>Delay</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -568,12 +568,12 @@ any key or using the right or middle mouse buttons.</source>
     <message>
         <location filename="../src/modules/extedit/moduleextedit.cpp" line="38"/>
         <source>External edit</source>
-        <translation type="unfinished"></translation>
+        <translation>Édition externe</translation>
     </message>
     <message>
         <location filename="../src/modules/extedit/moduleextedit.cpp" line="49"/>
         <source>Edit in...</source>
-        <translation type="unfinished"></translation>
+        <translation>Éditer avec...</translation>
     </message>
     <message>
         <location filename="../src/modules/uploader/moduleuploader.cpp" line="103"/>

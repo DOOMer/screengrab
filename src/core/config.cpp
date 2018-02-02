@@ -13,9 +13,7 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
 #include "src/core/config.h"
@@ -37,6 +35,8 @@
 #define KEY_SAVEFORMAT          "defImgFormat"
 #define KEY_DELAY_DEF           "defDelay"
 #define KEY_DELAY               "delay"
+#define KEY_SCREENSHOT_TYPE_DEF "defScreenshotType"
+#define KEY_SCREENSHOT_TYPE     "screenshotType"
 #define KEY_IMG_QUALITY         "imageQuality"
 #define KEY_FILENAMEDATE        "insDateTimeInFilename"
 #define KEY_DATETIME_TPL        "templateDateTime"
@@ -53,10 +53,60 @@
 #define KEY_ZOOMBOX             "zoomAroundMouse"
 #define KEY_TIME_NOTIFY         "timeTrayMessages"
 #define KEY_ALLOW_COPIES        "AllowCopies"
-#define KEY_TYPE_SCREEN         "typeScreenDefault"
 #define KEY_ENABLE_EXT_VIEWER   "enbaleExternalView"
 #define KEY_NODECOR             "noDecorations"
 #define KEY_INCLUDE_CURSOR      "includeCursor"
+#define KEY_FIT_INSIDE          "fitInside"
+
+
+static const QLatin1String FullScreen("FullScreen");
+static const QLatin1String Window("Window");
+static const QLatin1String Area("Area");
+static const QLatin1String PreviousSelection("PreviousSelection");
+
+static QString screenshotTypeToString(int v);
+static int screenshotTypeFromString(const QString& str);
+
+static QString screenshotTypeToString(int v)
+{
+    QString r;
+
+    switch(v) {
+    case Core::FullScreen:
+        r = FullScreen;
+        break;
+    case Core::Window:
+        r = Window;
+        break;
+    case Core::Area:
+        r = Area;
+        break;
+    case Core::PreviousSelection:
+        r = PreviousSelection;
+        break;
+    default:
+        r = FullScreen;
+    }
+    return r;
+}
+
+static int screenshotTypeFromString(const QString& str)
+{
+    int r;
+
+    if (str == FullScreen)
+        r = Core::FullScreen;
+    else if (str == Window)
+        r = Core::Window;
+    else if (str == Area)
+        r = Core::Area;
+    else if (str == PreviousSelection)
+        r = Core::PreviousSelection;
+    else
+        r = Core::FullScreen; // Default
+
+    return r;
+}
 
 Config* Config::ptrInstance = 0;
 
@@ -81,7 +131,6 @@ Config::Config()
         saveSettings();
     }
 
-    _imageFormats << "png" << "jpg" << "bmp";
     _settings->setIniCodec("UTF-8");
     _scrNum = 0;
 }
@@ -244,6 +293,26 @@ void Config::setDelay(quint8 sec)
     setValue(KEY_DELAY, sec);
 }
 
+int Config::getDefScreenshotType()
+{
+    return (value(QLatin1String(KEY_SCREENSHOT_TYPE_DEF)).toInt());
+}
+
+void Config::setDefScreenshotType(const int type)
+{
+    setValue(QLatin1String(KEY_SCREENSHOT_TYPE_DEF), type);
+}
+
+int Config::getScreenshotType()
+{
+    return (value(QLatin1String(KEY_SCREENSHOT_TYPE)).toInt());
+}
+
+void Config::setScreenshotType(const int type)
+{
+    setValue(QLatin1String(KEY_SCREENSHOT_TYPE), type);
+}
+
 quint8 Config::getAutoCopyFilenameOnSaving()
 {
     return value(KEY_FILENAME_TO_CLB).toInt();
@@ -283,16 +352,6 @@ bool Config::getCloseInTray()
 void Config::setCloseInTray(bool val)
 {
     setValue(KEY_CLOSE_INTRAY, val);
-}
-
-int Config::getTypeScreen()
-{
-    return value(KEY_TYPE_SCREEN).toInt();
-}
-
-void Config::setTypeScreen(quint8 type)
-{
-    setValue(KEY_TYPE_SCREEN, type);
 }
 
 quint8 Config::getTimeTrayMess()
@@ -397,6 +456,16 @@ void Config::setNoDecoration(bool val)
     setValue(KEY_NODECOR, val);
 }
 
+bool Config::getFitInside()
+{
+    return value(KEY_FIT_INSIDE).toBool();
+}
+
+void Config::setFitInside(bool val)
+{
+    setValue(KEY_FIT_INSIDE, val);
+}
+
 void Config::saveWndSize()
 {
     // saving size
@@ -414,6 +483,7 @@ void Config::loadSettings()
     setSaveFileName(_settings->value(KEY_SAVENAME,DEF_SAVE_NAME).toString());
     setSaveFormat(_settings->value(KEY_SAVEFORMAT, DEF_SAVE_FORMAT).toString());
     setDefDelay(_settings->value(KEY_DELAY, DEF_DELAY).toInt());
+    setDefScreenshotType(screenshotTypeFromString(_settings->value(QLatin1String(KEY_SCREENSHOT_TYPE_DEF)).toString()));
     setAutoCopyFilenameOnSaving(_settings->value(KEY_FILENAME_TO_CLB, DEF_FILENAME_TO_CLB).toInt());
     setDateTimeInFilename(_settings->value(KEY_FILENAMEDATE, DEF_DATETIME_FILENAME).toBool());
     setDateTimeTpl(_settings->value(KEY_DATETIME_TPL, DEF_DATETIME_TPL).toString());
@@ -438,6 +508,7 @@ void Config::loadSettings()
     setCloseInTray(_settings->value(KEY_CLOSE_INTRAY, DEF_CLOSE_IN_TRAY).toBool());
     setAllowMultipleInstance(_settings->value(KEY_ALLOW_COPIES, DEF_ALLOW_COPIES).toBool());
     setEnableExtView(_settings->value(KEY_ENABLE_EXT_VIEWER, DEF_ENABLE_EXT_VIEWER).toBool());
+    setFitInside(_settings->value(KEY_FIT_INSIDE, DEF_FIT_INSIDE).toBool());
     _settings->endGroup();
 
     setDelay(getDefDelay());
@@ -452,6 +523,7 @@ void Config::saveSettings()
     _settings->setValue(KEY_SAVENAME, getSaveFileName());
     _settings->setValue(KEY_SAVEFORMAT, getSaveFormat());
     _settings->setValue(KEY_DELAY, getDefDelay());
+    _settings->setValue(QLatin1String(KEY_SCREENSHOT_TYPE_DEF), screenshotTypeToString(getDefScreenshotType()));
     _settings->setValue(KEY_FILENAME_TO_CLB, getAutoCopyFilenameOnSaving());
     _settings->setValue(KEY_FILENAMEDATE, getDateTimeInFilename());
     _settings->setValue(KEY_DATETIME_TPL, getDateTimeTpl());
@@ -474,6 +546,7 @@ void Config::saveSettings()
     _settings->setValue(KEY_CLOSE_INTRAY, getCloseInTray());
     _settings->setValue(KEY_ALLOW_COPIES, getAllowMultipleInstance());
     _settings->setValue(KEY_ENABLE_EXT_VIEWER, getEnableExtView());
+    _settings->setValue(KEY_FIT_INSIDE, getFitInside());
     _settings->endGroup();
 
     _shortcuts->saveSettings();
@@ -488,6 +561,7 @@ void Config::setDefaultSettings()
     setSaveFileName(DEF_SAVE_NAME);
     setSaveFormat(DEF_SAVE_FORMAT);
     setDefDelay(DEF_DELAY);
+    setScreenshotType(Core::FullScreen);
     setImageQuality(DEF_IMG_QUALITY);
     setDateTimeInFilename(DEF_DATETIME_FILENAME);
     setDateTimeTpl(DEF_DATETIME_TPL);
@@ -504,6 +578,7 @@ void Config::setDefaultSettings()
     // setRestoredWndSize(DEF_WND_WIDTH, DEF_WND_HEIGHT);
     setShowTrayIcon(DEF_SHOW_TRAY);
     setEnableExtView(DEF_ENABLE_EXT_VIEWER);
+    setFitInside(DEF_FIT_INSIDE);
 
     _shortcuts->setDefaultSettings();
 

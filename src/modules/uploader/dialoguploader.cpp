@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 - 2013 by Artem 'DOOMer' Galichkin                        *
+ *   Copyright (C) 2009 - 2013 by Artem 'DOOMer' Galichkin                 *
  *   doomer3d@gmail.com                                                    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -13,9 +13,7 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
 #include "dialoguploader.h"
@@ -24,8 +22,6 @@
 #include "uploaderconfig.h"
 #include "imgur/uploader_imgur.h"
 #include "imgur/uploader_imgur_widget.h"
-#include "mediacrush/uploader_mediacrush.h"
-#include "mediacrush/uploader_mediacrush_widget.h"
 #include <core/core.h>
 
 #include <QMessageBox>
@@ -115,9 +111,6 @@ void DialogUploader::slotUploadStart()
     switch(_selectedHost)
     {
     case 0:
-        _uploader = new Uploader_MediaCrush(Core::instance()->config()->getSaveFormat());
-        break;
-    case 1:
         _uploader = new Uploader_ImgUr;
         break;
     default:
@@ -150,13 +143,10 @@ void DialogUploader::slotSeletHost(int type)
     switch(_selectedHost)
     {
         case 0:
-            _uploaderWidget = new Uploader_MediaCrush_Widget();
-            break;
-        case 1:
             _uploaderWidget = new Uploader_ImgUr_Widget();
             break;
         default:
-            _uploaderWidget = new Uploader_MediaCrush_Widget();
+            _uploaderWidget = new Uploader_ImgUr_Widget();
     }
 
     _ui->stackedWidget->addWidget(_uploaderWidget);

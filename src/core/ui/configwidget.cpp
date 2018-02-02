@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 - 2013 by Artem 'DOOMer' Galichkin                        *
+ *   Copyright (C) 2009 - 2013 by Artem 'DOOMer' Galichkin                 *
  *   doomer3d@gmail.com                                                    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -13,10 +13,8 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
- ***************************************************************************/
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+***************************************************************************/
 
 #include <QKeyEvent>
 
@@ -152,10 +150,10 @@ void ConfigDialog::loadSettings()
 
     _ui->cbxFormat->addItem("png");
     _ui->cbxFormat->addItem("jpg");
-    _ui->cbxFormat->addItem("bmp");
     _ui->cbxFormat->setCurrentIndex(conf->getDefaultFormatID());
 
     _ui->defDelay->setValue(conf->getDefDelay());
+    _ui->cbxTypeScr->setCurrentIndex(conf->getDefScreenshotType());
     _ui->checkIncDate->setChecked(conf->getDateTimeInFilename());
     _ui->editDateTmeTpl->setText(conf->getDateTimeTpl());
     _ui->cbxCopyFileName->setCurrentIndex(conf->getAutoCopyFilenameOnSaving());
@@ -178,6 +176,8 @@ void ConfigDialog::loadSettings()
 
     _ui->slideImgQuality->setValue(conf->getImageQuality());
     _ui->cbxEnableExtView->setChecked(conf->getEnableExtView());
+
+    _ui->checkFitInside->setChecked(conf->getFitInside());
 }
 
 
@@ -254,6 +254,7 @@ void ConfigDialog::saveSettings()
     conf->setSaveFileName(_ui->editFileName->text());
     conf->setSaveFormat(_ui->cbxFormat->currentText());
     conf->setDefDelay(_ui->defDelay->value());
+    conf->setDefScreenshotType(_ui->cbxTypeScr->currentIndex());
     conf->setDateTimeInFilename(_ui->checkIncDate->isChecked());
     conf->setDateTimeTpl(_ui->editDateTmeTpl->text());
     conf->setAutoCopyFilenameOnSaving(_ui->cbxCopyFileName->currentIndex());
@@ -269,6 +270,7 @@ void ConfigDialog::saveSettings()
     conf->setImageQuality(_ui->slideImgQuality->value());
     conf->setEnableExtView(_ui->cbxEnableExtView->isChecked());
     conf->setNoDecoration(_ui->checkNoDecorX11->isChecked());
+    conf->setFitInside(_ui->checkFitInside->isChecked());
 
     // save shortcuts in shortcutmanager
     int action = 0;
@@ -321,15 +323,12 @@ QString ConfigDialog::getFormat()
 
 void ConfigDialog::selectDir()
 {
-    QString *directory = new QString;
-    {
-        *directory = QFileDialog::getExistingDirectory(this, trUtf8("Select directory"),
-                _ui->editDir->text(), QFileDialog::ShowDirsOnly)+QDir::separator();
-        if (directory->toUtf8() != QDir::separator())
-            _ui->editDir->setText( *directory);
-    }
+    QString directory = QFileDialog::getExistingDirectory(this, trUtf8("Select directory"),
+                _ui->editDir->text(), QFileDialog::ShowDirsOnly);
 
-    delete directory;
+    if (!directory.isEmpty()) {
+         _ui->editDir->setText(QDir::toNativeSeparators(directory));
+    }
 }
 
 void ConfigDialog::restoreDefaults()

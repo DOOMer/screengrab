@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 - 2013 by Artem 'DOOMer' Galichkin                        *
+ *   Copyright (C) 2009 - 2013 by Artem 'DOOMer' Galichkin                 *
  *   doomer3d@gmail.com                                                    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -13,9 +13,7 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
 #include "uploaderconfigwidget.h"
@@ -42,10 +40,8 @@ UploaderConfigWidget::UploaderConfigWidget(QWidget *parent) :
 
     loadSettings();
 
-    _crush = new UploaderConfigWidget_MediaCrush(this);
     _imgur = new UploaderConfigWidget_ImgUr(this);
 
-    _ui->stackedHosts->addWidget(_crush);
     _ui->stackedHosts->addWidget(_imgur);
 
     void (QComboBox::*hostChanged)(int) = &QComboBox::currentIndexChanged;
@@ -102,7 +98,6 @@ void UploaderConfigWidget::saveSettings()
     config.saveSettings("common", savingValues);
 
     QMetaObject::invokeMethod(_imgur, "saveSettings");
-    QMetaObject::invokeMethod(_crush, "saveSettings");
 }
 
 void UploaderConfigWidget::changeEvent(QEvent *e)
