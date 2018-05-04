@@ -31,22 +31,13 @@ AboutDialog::AboutDialog(QWidget *parent):
     _ui->setupUi(this);
     _ui->labAppName->setText(_ui->labAppName->text() + QString(" <b>") + qApp->applicationVersion() + QString("</b>"));
 
-    QString versionInfo;
-    versionInfo = tr("built on ");
-    versionInfo.append(__DATE__);
-    versionInfo.append(" ");
-    versionInfo.append(__TIME__);
-
     _ui->labQtVer->setText(tr("using Qt ") + qVersion());
-
-    _ui->labVersion->setText(versionInfo);
 
     QTabBar *tabs = new QTabBar;
 
     _ui->frame->layout()->addWidget(tabs);
     _ui->frame->layout()->addWidget(_ui->txtArea);
 
-    tabs->setFixedHeight(24);
     tabs->insertTab(0, tr("About"));
     tabs->insertTab(1, tr("Thanks"));
     tabs->insertTab(2, tr("Help us"));
@@ -112,7 +103,7 @@ QString AboutDialog::tabAbout()
     str += "<br><br>";
 
     str += tr("Website")+" - ";
-    str += "<a href=\"https://github.com/QtDesktop/ScreenGrab\">https://github.com/QtDesktop/ScreenGrab</a>";
+    str += "<a href=\"https://github.com/lxqt/screengrab\">https://github.com/lxqt/screengrab</a>";
     str += "<br><br>";
 
     str += tr("Licensed under the ");
@@ -139,7 +130,7 @@ QString AboutDialog::tabHelpUs()
 
     str += tr("Bug tracker");
     str += "<br>";
-    str += "<a href=https://github.com/QtDesktop/screengrab/issues>https://github.com/QtDesktop/screengrab/issues/</a>";
+    str += "<a href=https://github.com/lxqt/screengrab/issues>https://github.com/lxqt/screengrab/issues/</a>";
 
     return str;
 }

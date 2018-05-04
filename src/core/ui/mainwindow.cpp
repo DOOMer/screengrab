@@ -32,7 +32,7 @@
 #include <QMenu>
 
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent),
-    _ui(new Ui::MainWindow), _conf(NULL), _trayMenu(NULL)
+    _ui(new Ui::MainWindow), _conf(nullptr), _trayMenu(nullptr)
 {
     _ui->setupUi(this);
     _trayed = false;
@@ -56,8 +56,9 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent),
     connect(_globalShortcutSignals, SIGNAL(mapped(int)), this, SLOT(globalShortcutActivate(int)));
 #endif
 
-    _trayIcon = NULL;
-    _hideWnd = NULL;
+    _trayIcon = nullptr;
+    _hideWnd = nullptr;
+    _trayMenu = nullptr;
 
     // create actions menu
     actNew = new QAction(QIcon::fromTheme("document-new"), tr("New"), this);
@@ -106,9 +107,14 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent),
     void (QComboBox::*typeScr)(int) = &QComboBox::currentIndexChanged;
     connect(_ui->cbxTypeScr, typeScr, this, &MainWindow::typeScreenShotChange);
     connect(_ui->checkIncludeCursor, &QCheckBox::toggled, this, &MainWindow::checkIncludeCursor);
+    connect(_ui->checkNoDecoration, &QCheckBox::toggled, this, &MainWindow::checkNoDecoration);
+    connect(_ui->checkZommMouseArea, &QCheckBox::toggled, this, &MainWindow::checkZommMouseArea);
 
-    QIcon icon(":/res/img/logo.png");
-    setWindowIcon(icon);
+    appIcon = QIcon::fromTheme ("screengrab");
+    if (appIcon.isNull())
+        appIcon = QIcon(":/res/img/logo.png");
+
+    setWindowIcon(appIcon);
 
     QRect geometry = QApplication::desktop()->availableGeometry(QApplication::desktop()->screenNumber());
     move(geometry.width() / 2 - width() / 2, geometry.height() / 2 - height() / 2);
@@ -151,9 +157,8 @@ void MainWindow::resizeEvent(QResizeEvent *event)
     // get size dcreen pixel map
     QSize scaleSize = Core::instance()->getPixmap()->size(); // get orig size pixmap
 
-    scaleSize.scale(_ui->scrLabel->size(), Qt::KeepAspectRatio);
+    scaleSize.scale(_ui->scrLabel->contentsRect().size(), Qt::KeepAspectRatio);
 
-    // if not scrlabel pixmap
     if (!_ui->scrLabel->pixmap() || scaleSize != _ui->scrLabel->pixmap()->size())
         updatePixmap(Core::instance()->getPixmap());
 }
@@ -172,8 +177,11 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
 
 void MainWindow::updatePixmap(QPixmap *pMap)
 {
-    _ui->scrLabel->setPixmap(pMap->scaled(_ui->scrLabel->size(),
-                                          Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    QSize lSize = _ui->scrLabel->contentsRect().size();
+    // never scale up the image beyond its real size
+    _ui->scrLabel->setPixmap(lSize.width() < pMap->width() || lSize.height() < pMap->height()
+                                 ? pMap->scaled(lSize, Qt::KeepAspectRatio, Qt::SmoothTransformation)
+                                 : *pMap);
 }
 
 void MainWindow::updateModulesActions(QList<QAction *> list)
@@ -219,7 +227,7 @@ void MainWindow::show()
     if (_conf->getShowTrayIcon())
     {
         _trayIcon->blockSignals(false);
-        _trayIcon->setContextMenu(_trayMenu); // enable context menu
+        _trayIcon->setContextMenu(_trayMenu);
     }
 
     if (_trayIcon)
@@ -230,7 +238,7 @@ void MainWindow::show()
 
 bool MainWindow::isTrayed() const
 {
-    return _trayIcon != NULL;
+    return _trayIcon != nullptr;
 }
 
 void MainWindow::showTrayMessage(const QString& header, const QString& message)
@@ -294,7 +302,7 @@ void MainWindow::showHelp()
 
 void MainWindow::showOptions()
 {
-    ConfigDialog *options = new ConfigDialog();
+    ConfigDialog *options = new ConfigDialog(this);
 #ifdef SG_GLOBAL_SHORTCUTS
     globalShortcutBlock(true);
 #endif
@@ -302,9 +310,12 @@ void MainWindow::showOptions()
     if (isMinimized())
     {
         showNormal();
+        disableTrayMenuActions(true);
         if (options->exec() == QDialog::Accepted)
             updateUI();
-        hideToShot();
+        disableTrayMenuActions(false);
+        if (_trayIcon) // the tray may have been removed
+            windowHideShow(); // hides the window in this case
     }
     else
     {
@@ -325,8 +336,10 @@ void MainWindow::showAbout()
     if (isMinimized())
     {
         showNormal();
+        disableTrayMenuActions(true);
         about->exec();
-        hideToShot();
+        disableTrayMenuActions(false);
+        windowHideShow(); // hides the window in this case
     }
     else
         about->exec();
@@ -343,7 +356,7 @@ void MainWindow::displatScreenToolTip()
     if (_conf->getEnableExtView())
     {
         toolTip += "\n\n";
-        toolTip += tr("Double click for open screenshot in external default image viewer");
+        toolTip += tr("Double click to open screenshot in external default image viewer");
     }
 
     _ui->scrLabel->setToolTip(toolTip);
@@ -370,36 +383,53 @@ void MainWindow::createTray()
     _trayMenu->addSeparator();
     _trayMenu->addAction(actQuit);
 
-    // icon menu
-    QIcon icon(":/res/img/logo.png");
-
     _trayIcon = new QSystemTrayIcon(this);
 
     _trayIcon->setContextMenu(_trayMenu);
-    _trayIcon->setIcon(icon);
+    _trayIcon->setIcon(appIcon);
     _trayIcon->show();
     connect(_trayIcon, &QSystemTrayIcon::activated, this, &MainWindow::trayClick);
 }
 
+void MainWindow::disableTrayMenuActions(bool disable)
+{
+    // On the one hand, QSystemTrayIcon::setContextMenu() can't be used for changing/removing
+    // the menu. On the other hand, deleting/recreating the current menu isn't a good way of
+    // disabling the context menu. Instead, we disable/enable menu ACTIONS when needed.
+    if (_trayMenu)
+    {
+        const QList<QAction*> actions = _trayMenu->actions();
+        for (QAction *action : actions)
+            action->setDisabled(disable);
+    }
+}
+
 void MainWindow::killTray()
 {
+    // the actions should be enabled because they're shared with the main window
+    disableTrayMenuActions(false);
+
     _trayed = false;
-    _trayMenu->clear();
+
+    delete _trayMenu;
+    _trayMenu = nullptr;
 
     delete _trayIcon;
-    _trayIcon = NULL;
+    _trayIcon = nullptr;
 }
 
 void MainWindow::delayBoxChange(int delay)
 {
-    if (delay == 0)
-        _ui->delayBox->setSpecialValueText(tr("None"));
     _conf->setDelay(delay);
 }
 
 void MainWindow::typeScreenShotChange(int type)
 {
-    _conf->setScreenshotType(type);
+    _conf->setDefScreenshotType(type);
+    // show/hide checkboxes according to the type
+    _ui->checkNoDecoration->setVisible(type == 1);
+    _ui->checkIncludeCursor->setVisible(type < 2);
+    _ui->checkZommMouseArea->setVisible(type >= 2);
 }
 
 void MainWindow::checkIncludeCursor(bool include)
@@ -407,11 +437,30 @@ void MainWindow::checkIncludeCursor(bool include)
     _conf->setIncludeCursor(include);
 }
 
+void MainWindow::checkNoDecoration(bool noDecor)
+{
+    _conf->setNoDecoration(noDecor);
+}
+
+void MainWindow::checkZommMouseArea(bool zoom)
+{
+    _conf->setZoomAroundMouse(zoom);
+}
+
 // updating UI from configdata
 void MainWindow::updateUI()
 {
     _ui->delayBox->setValue(_conf->getDelay());
-    _ui->cbxTypeScr->setCurrentIndex(_conf->getDefScreenshotType());
+
+    int type = _conf->getDefScreenshotType();
+    _ui->cbxTypeScr->setCurrentIndex(type);
+    // show/hide checkboxes according to the type
+    _ui->checkNoDecoration->setVisible(type == 1);
+    _ui->checkIncludeCursor->setVisible(type < 2);
+    _ui->checkZommMouseArea->setVisible(type >= 2);
+
+    _ui->checkZommMouseArea->setChecked(_conf->getZoomAroundMouse());
+    _ui->checkNoDecoration->setChecked(_conf->getNoDecoration());
     _ui->checkIncludeCursor->setChecked(_conf->getIncludeCursor());
 
     updateShortcuts();
@@ -428,6 +477,12 @@ void MainWindow::updateUI()
 // mouse clicks on tray icom
 void MainWindow::trayClick(QSystemTrayIcon::ActivationReason reason)
 {
+    if (findChildren<QDialog*>().count() > 0)
+    { // just activate the window when there's a dialog
+        activateWindow();
+        raise();
+        return;
+    }
     switch(reason)
     {
         case QSystemTrayIcon::Trigger:
@@ -460,7 +515,7 @@ void MainWindow::hideToShot()
     if (_conf->getShowTrayIcon())
     {
         _trayIcon->blockSignals(true);
-        _trayIcon->setContextMenu(NULL); // enable context menu
+        disableTrayMenuActions(true);
     }
 
     hide();
@@ -479,53 +534,63 @@ void MainWindow::showWindow(const QString& str)
 
 void MainWindow::restoreFromShot()
 {
-    if (!isVisible() && !_trayed)
-        showNormal();
-
-    // if show tray
     if (_conf->getShowTrayIcon())
     {
         _trayIcon->blockSignals(false);
-        _trayIcon->setContextMenu(_trayMenu); // enable context menu
+        disableTrayMenuActions(false);
     }
+    showNormal();
 }
 
 void MainWindow::saveScreen()
 {
+    bool wasMinimized(isMinimized());
+    if (wasMinimized)
+    {
+        showNormal();
+        disableTrayMenuActions(true);
+    }
+
     // create initial filepath
     QHash<QString, QString> formatsAvalible;
+    const QStringList formatIDs = _conf->getFormatIDs();
+    for (const QString &formatID : formatIDs)
+        formatsAvalible[formatID] = tr("%1 Files").arg(formatID.toUpper());
 
-    formatsAvalible["png"] = tr("PNG Files");
-    formatsAvalible["jpg"] = tr("JPEG Files");
-
-    QString format = "png";
+    QString format = formatIDs.at(_conf->getDefaultFormatID());
     _conf->getSaveFormat();
 
     Core* c = Core::instance();
     QString filePath = c->getSaveFilePath(format);
 
-    // create file filters
-    QString fileFilters;
-
     QString filterSelected;
-    filterSelected = formatsAvalible[format];
 
+    // create file filters
+    QStringList fileFilters;
     QHash<QString, QString>::const_iterator iter = formatsAvalible.constBegin();
     while (iter != formatsAvalible.constEnd())
     {
-        fileFilters.append(iter.value() + " (*." + iter.key() + ");;");
+        QString str = iter.value() + " (*." + iter.key() + ")";
+        if (iter.key() == format)
+            filterSelected = str;
+        fileFilters << str;
         ++iter;
     }
-    fileFilters.chop(2);
 
     QString fileName;
-    fileName = QFileDialog::getSaveFileName(this, tr("Save As..."),  filePath, fileFilters, &filterSelected, QFileDialog::DontUseNativeDialog);
+    fileName = QFileDialog::getSaveFileName(this, tr("Save As..."),  filePath, fileFilters.join(";;"), &filterSelected);
 
     QRegExp rx("\\(\\*\\.[a-z]{3,4}\\)");
     quint8 tmp = filterSelected.size() - rx.indexIn(filterSelected);
 
     filterSelected.chop(tmp + 1);
     format = formatsAvalible.key(filterSelected);
+
+    if (wasMinimized)
+    {
+        disableTrayMenuActions(false);
+        windowHideShow(); // hides the window in this case
+    }
 
     // if user canceled saving
     if (fileName.isEmpty())
